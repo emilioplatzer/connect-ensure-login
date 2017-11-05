@@ -1,4 +1,8 @@
-# connect-ensure-login
+# ensure-login
+
+*Based on [jaredhanson's connect-ensure-login](https://github.com/jaredhanson/connect-ensure-login)*
+
+   * Add `baseUrl` parameter in a way that permits Nginx and Apache redirects
 
 This middleware ensures that a user is logged in.  If a request is received that
 is unauthenticated, the request will be redirected to a login page.  The URL
@@ -7,7 +11,7 @@ page that was originally requested.
 
 ## Install
 
-    $ npm install connect-ensure-login
+    $ npm install ensure-login
 
 ## Usage
 
@@ -17,7 +21,7 @@ In this example, an application has a settings page where preferences can be
 configured.  A user must be logged in before accessing this page.
 
     app.get('/settings',
-      ensureLoggedIn('/login'),
+      ensureLoggedIn({baseUrl:'/', redirectTo:'/login'}),
       function(req, res) {
         res.render('settings', { user: req.user });
       });
@@ -35,7 +39,12 @@ Simply mount Passport's `authenticate()` middleware at the login route.
       res.render('login');
     });
 
-    app.post('/login', passport.authenticate('local', { successReturnToOrRedirect: '/', failureRedirect: '/login' }));
+    app.post('/login', 
+      passport.authenticate('local', { 
+        successReturnToOrRedirect: '/', 
+        failureRedirect: '/login' 
+      })
+    );
     
 Upon log in, Passport will notice the `returnTo` URL saved in the session and
 redirect the user back to `/settings`.
@@ -62,8 +71,6 @@ what happens:
     $ npm install --dev
     $ make test
 
-[![Build Status](https://secure.travis-ci.org/jaredhanson/connect-ensure-login.png)](http://travis-ci.org/jaredhanson/connect-ensure-login)
-
 ## Credits
 
   - [Jared Hanson](http://github.com/jaredhanson)
@@ -72,4 +79,5 @@ what happens:
 
 [The MIT License](http://opensource.org/licenses/MIT)
 
-Copyright (c) 2012-2013 Jared Hanson <[http://jaredhanson.net/](http://jaredhanson.net/)>
+### Original version
+   * Copyright (c) 2012-2013 Jared Hanson <[http://jaredhanson.net/](http://jaredhanson.net/)>
