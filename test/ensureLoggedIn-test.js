@@ -93,7 +93,7 @@ vows.describe('ensureLoggedIn').addBatch({
         assert.equal(req.session.returnTo, '/foo');
       },
     },
-    
+      
     'when handling a request to a sub-app that is not authenticated': {
       topic: function(ensureLoggedIn) {
         var self = this;
@@ -157,7 +157,7 @@ vows.describe('ensureLoggedIn').addBatch({
   
   'middleware with a url and baseUrl': {
     topic: function() {
-      return ensureLoggedIn({redirectTo:'/signin', baseUrl:'/app'});
+      return ensureLoggedIn({redirectTo:'/signin', baseUrl:'/app', setReturnTo:/^([^/]*|.*\/)[^.]+$/});
     },
     
     'when handling a request that is authenticated': {
@@ -178,7 +178,7 @@ vows.describe('ensureLoggedIn').addBatch({
           ensureLoggedIn(req, res, next)
         });
       },
-      
+
       'should not error' : function(err, req, res) {
         assert.isNull(err);
       },
@@ -217,6 +217,36 @@ vows.describe('ensureLoggedIn').addBatch({
       },
       'should set returnTo' : function(err, req, res) {
         assert.equal(req.session.returnTo, '/app/foo');
+      },
+    },
+
+    'when handling a request to a resource that is not authenticated': {
+      topic: function(ensureLoggedIn) {
+        var self = this;
+        var req = new MockRequest();
+        req.url = '/app/foo.png';
+        req.isAuthenticated = function() { return false; };
+        var res = new MockResponse();
+        res.done = function() {
+          self.callback(null, req, res);
+        }
+        
+        function next(err) {
+          self.callback(new Error('should not be called'));
+        }
+        process.nextTick(function () {
+          ensureLoggedIn(req, res, next)
+        });
+      },
+      
+      'should not error' : function(err, req, res) {
+        assert.isNull(err);
+      },
+      'should redirect' : function(err, req, res) {
+        assert.equal(res._redirect, 'signin');
+      },
+      'should not set returnTo' : function(err, req, res) {
+        assert.equal(req.session.returnTo, undefined);
       },
     },
     
