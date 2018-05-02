@@ -3,6 +3,7 @@
 *Based on [jaredhanson's connect-ensure-login](https://github.com/jaredhanson/connect-ensure-login)*
 
    * Add `baseUrl` parameter in a way that permits Nginx and Apache redirects
+   * Enance `setReturnTo` parameter. If a Regexp is passed the url is tested and only remember if it matchs with it.
 
 This middleware ensures that a user is logged in.  If a request is received that
 is unauthenticated, the request will be redirected to a login page.  The URL
@@ -21,7 +22,7 @@ In this example, an application has a settings page where preferences can be
 configured.  A user must be logged in before accessing this page.
 
     app.get('/settings',
-      ensureLoggedIn({baseUrl:'/', redirectTo:'/login'}),
+      ensureLoggedIn({baseUrl:'/', redirectTo:'/login', setReturnTo:/^([^/]*|.*\/)[^.]+$/}),
       function(req, res) {
         res.render('settings', { user: req.user });
       });
