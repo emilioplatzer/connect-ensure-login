@@ -4,6 +4,7 @@
 
    * Add `baseUrl` parameter in a way that permits Nginx and Apache redirects
    * Enance `setReturnTo` parameter. If a Regexp is passed the url is tested and only remember if it matchs with it.
+   * Id Does not remember the url when an AJAX call was made (unles `setReturnWhenXhr` is set to true). 
 
 This middleware ensures that a user is logged in.  If a request is received that
 is unauthenticated, the request will be redirected to a login page.  The URL
@@ -67,6 +68,17 @@ what happens:
 4. User's browser follows redirect to `GET /settings`
     - Now authenticated, application renders settings page
 
+## API
+
+### ensureLoggedIn(opts)
+
+opts       |default     |type             |meaning
+-----------|------------|-----------------|---------------------------------------
+redirectTo |`'/login'`  |string           |URL to redirect to for login
+setReturnTo|`true`      |boolean or RegExp|set redirectTo in session, always or when URL matchs the RegExp
+baseUrl    |`'/'`       |string           |URL of the base where redirectTo is mounted
+setReturnWhenXhr|`false`|boolean          |Include AJAX calls when remember the URL to redirect to
+
 ## Tests
 
     $ npm install --dev
@@ -74,7 +86,8 @@ what happens:
 
 ## Credits
 
-  - [Jared Hanson](http://github.com/jaredhanson)
+  - [Jared Hanson](http://github.com/jaredhanson) for the original
+  - [Emilio Platzer](http://github.com/emilioplatzer) for the few enances
 
 ## License
 

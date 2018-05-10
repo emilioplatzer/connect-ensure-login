@@ -249,6 +249,37 @@ vows.describe('ensureLoggedIn').addBatch({
         assert.equal(req.session.returnTo, undefined);
       },
     },
+
+    'when handling an AJAX request that is not authenticated': {
+      topic: function(ensureLoggedIn) {
+        var self = this;
+        var req = new MockRequest();
+        req.url = '/app/foo';
+        req.xhr = true;
+        req.isAuthenticated = function() { return false; };
+        var res = new MockResponse();
+        res.done = function() {
+          self.callback(null, req, res);
+        }
+        
+        function next(err) {
+          self.callback(new Error('should not be called'));
+        }
+        process.nextTick(function () {
+          ensureLoggedIn(req, res, next)
+        });
+      },
+      
+      'should not error' : function(err, req, res) {
+        assert.isNull(err);
+      },
+      'should redirect' : function(err, req, res) {
+        assert.equal(res._redirect, 'signin');
+      },
+      'should not set returnTo' : function(err, req, res) {
+        assert.equal(req.session.returnTo, undefined);
+      },
+    },
     
     'when handling a request to a sub-app that is not authenticated': {
       topic: function(ensureLoggedIn) {
@@ -310,7 +341,44 @@ vows.describe('ensureLoggedIn').addBatch({
       },
     },
   },
+
+  'middleware with a url and baseUrl that remembers AJAX': {
+    topic: function() {
+      return ensureLoggedIn({redirectTo:'/signin', baseUrl:'/app', setReturnWhenXhr:true});
+    },
   
+    'when handling an AJAX request that is not authenticated': {
+      topic: function(ensureLoggedIn) {
+        var self = this;
+        var req = new MockRequest();
+        req.url = '/app/foo';
+        req.xhr = true;
+        req.isAuthenticated = function() { return false; };
+        var res = new MockResponse();
+        res.done = function() {
+          self.callback(null, req, res);
+        }
+        
+        function next(err) {
+          self.callback(new Error('should not be called'));
+        }
+        process.nextTick(function () {
+          ensureLoggedIn(req, res, next)
+        });
+      },
+      
+      'should not error' : function(err, req, res) {
+        assert.isNull(err);
+      },
+      'should redirect' : function(err, req, res) {
+        assert.equal(res._redirect, 'signin');
+      },
+      'should set returnTo' : function(err, req, res) {
+        assert.equal(req.session.returnTo, '/app/foo');
+      },
+    },
+  },
+
   'middleware with a redirectTo and setReturnTo options': {
     topic: function() {
       return ensureLoggedIn({ redirectTo: '/session/new', setReturnTo: false });

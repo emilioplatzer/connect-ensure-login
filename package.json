@@ -1,6 +1,6 @@
 {
   "name": "ensure-login",
-  "version": "0.1.3",
+  "version": "0.1.4",
   "description": "Login session ensuring middleware for Connect.",
   "keywords": [
     "connect",
