@@ -219,7 +219,39 @@ vows.describe('ensureLoggedIn').addBatch({
         assert.equal(req.session.returnTo, '/app/foo');
       },
     },
-
+    
+    /* skip
+    'when handling a request that is not authenticated and requres /': {
+      topic: function(ensureLoggedIn) {
+        var self = this;
+        var req = new MockRequest();
+        req.url = '/app/';
+        req.isAuthenticated = function() { return false; };
+        var res = new MockResponse();
+        res.done = function() {
+          self.callback(null, req, res);
+        }
+        
+        function next(err) {
+          self.callback(new Error('should not be called'));
+        }
+        process.nextTick(function () {
+          ensureLoggedIn(req, res, next)
+        });
+      },
+      
+      'should not error' : function(err, req, res) {
+        assert.isNull(err);
+      },
+      'should redirect' : function(err, req, res) {
+        assert.equal(res._redirect, 'signin');
+      },
+      'should set returnTo' : function(err, req, res) {
+        assert.equal(req.session.returnTo, '/app/');
+      },
+    },
+    // */
+    
     'when handling a request to a resource that is not authenticated': {
       topic: function(ensureLoggedIn) {
         var self = this;
