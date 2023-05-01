@@ -1,6 +1,6 @@
 {
   "name": "ensure-login",
-  "version": "0.1.4",
+  "version": "0.1.5",
   "description": "Login session ensuring middleware for Connect.",
   "keywords": [
     "connect",
@@ -44,9 +44,10 @@
   },
   "scripts": {
     "x-test": "node_modules/.bin/vows test/*-test.js",
-    "test": "node_modules/.bin/vows test/ensureLoggedIn-test.js"
+    "test": "node_modules/.bin/vows test/ensureLoggedIn-test.js",
+    "test-win": "node_modules\\.bin\\vows test/ensureLoggedIn-test.js"
   },
   "engines": {
-    "node": ">= 0.4.0"
+    "node": ">= 18.0.0"
   }
 }
