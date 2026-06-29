@@ -15,10 +15,7 @@
     "proxy",
     "redirect"
   ],
-  "repository": {
-    "type": "git",
-    "url": "git://github.com/emilioplatzer/connect-ensure-login.git"
-  },
+  "repository": "emilioplatzer/connect-ensure-login",
   "bugs": {
     "url": "http://github.com/emilioplatzer/connect-ensure-login/issues"
   },
@@ -38,14 +35,32 @@
     }
   ],
   "main": "./lib",
+  "files": [
+    "lib"
+  ],
   "dependencies": {},
+  "overrides": {
+    "diff": ">=8.0.2",
+    "serialize-javascript": ">=7.0.0",
+    "uuid": ">=14.0.0"
+  },
   "devDependencies": {
-    "vows": "0.8.x"
+    "mocha": "^11.7.6",
+    "nyc": "^18.0.0",
+    "qa-control": "^0.7.5"
   },
   "scripts": {
-    "x-test": "node_modules/.bin/vows test/*-test.js",
-    "test": "node_modules/.bin/vows test/ensureLoggedIn-test.js",
-    "test-win": "node_modules\\.bin\\vows test/ensureLoggedIn-test.js"
+    "test": "mocha --reporter spec --bail --check-leaks test/",
+    "test-ci": "nyc --reporter=lcov --reporter=text node_modules/mocha/bin/_mocha --reporter spec --check-leaks test/"
+  },
+  "qa-control": {
+    "profile": "minimum",
+    "run-in": "server",
+    "type": "lib",
+    "gha": "all",
+    "silenced": [
+      "invalid_repository_section_in_package_json"
+    ]
   },
   "engines": {
     "node": ">= 18.0.0"

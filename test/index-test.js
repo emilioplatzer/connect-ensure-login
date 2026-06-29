@@ -1,22 +1,21 @@
-var vows = require('vows');
 var assert = require('assert');
-var login = require('index');
+var login = require('../lib/index.js');
 
 
-vows.describe('connect-ensure-login').addBatch({
-  
-  'module': {
-    'should export ensureLoggedIn': function () {
-      assert.isFunction(login.ensureLoggedIn);
+describe('connect-ensure-login', function() {
+
+  describe('module', function() {
+    it('should export ensureLoggedIn', function() {
+      assert.strictEqual(typeof login.ensureLoggedIn, 'function');
       assert.strictEqual(login.ensureLoggedIn, login.ensureAuthenticated);
-    },
-    
-    'should export ensureLoggedOut': function () {
-      assert.isFunction(login.ensureLoggedOut);
+    });
+
+    it('should export ensureLoggedOut', function() {
+      assert.strictEqual(typeof login.ensureLoggedOut, 'function');
       assert.strictEqual(login.ensureLoggedOut, login.ensureNotLoggedIn);
       assert.strictEqual(login.ensureLoggedOut, login.ensureUnauthenticated);
       assert.strictEqual(login.ensureLoggedOut, login.ensureNotAuthenticated);
-    },
-  },
-  
-}).export(module);
+    });
+  });
+
+});

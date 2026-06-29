@@ -1,7 +1,5 @@
-var vows = require('vows');
 var assert = require('assert');
-var util = require('util');
-var ensureLoggedOut = require('ensureLoggedOut');
+var ensureLoggedOut = require('../lib/ensureLoggedOut.js');
 
 
 function MockRequest() {
@@ -17,130 +15,94 @@ MockResponse.prototype.setHeader = function(name, value) {
 
 MockResponse.prototype.redirect = function(location) {
   this._redirect = location;
-  this.end();
-}
-
-MockResponse.prototype.end = function(data, encoding) {
-  this._data += data;
-  if (this.done) { this.done(); }
 }
 
 
-vows.describe('ensureLoggedOut').addBatch({
+describe('ensureLoggedOut', function() {
 
-  'middleware with a url': {
-    topic: function() {
-      return ensureLoggedOut('/home');
-    },
-    
-    'when handling a request that is authenticated': {
-      topic: function(ensureLoggedOut) {
-        var self = this;
-        var req = new MockRequest();
-        req.isAuthenticated = function() { return true; };
-        var res = new MockResponse();
-        res.done = function() {
-          self.callback(null, req, res);
-        }
-        
-        function next(err) {
-          self.callback(new Error('should not be called'));
-        }
-        process.nextTick(function () {
-          ensureLoggedOut(req, res, next)
-        });
-      },
-      
-      'should not error' : function(err, req, res) {
-        assert.isNull(err);
-      },
-      'should redirect' : function(err, req, res) {
-        assert.equal(res._redirect, '/home');
-      },
-    },
-    
-    'when handling a request that is not authenticated': {
-      topic: function(ensureLoggedOut) {
-        var self = this;
-        var req = new MockRequest();
-        req.isAuthenticated = function() { return false; };
-        var res = new MockResponse();
-        res.done = function() {
-          self.callback(new Error('should not be called'));
-        }
-        
-        function next(err) {
-          self.callback(err, req, res);
-        }
-        process.nextTick(function () {
-          ensureLoggedOut(req, res, next)
-        });
-      },
-      
-      'should not error' : function(err, req, res) {
-        assert.isNull(err);
-      },
-      'should not redirect' : function(err, req, res) {
-        assert.isUndefined(res._redirect);
-      },
-    },
-    
-    'when handling a request that lacks an isAuthenticated function': {
-      topic: function(ensureLoggedOut) {
-        var self = this;
-        var req = new MockRequest();
-        var res = new MockResponse();
-        res.done = function() {
-          self.callback(new Error('should not be called'));
-        }
-        
-        function next(err) {
-          self.callback(err, req, res);
-        }
-        process.nextTick(function () {
-          ensureLoggedOut(req, res, next)
-        });
-      },
-      
-      'should not error' : function(err, req, res) {
-        assert.isNull(err);
-      },
-      'should not redirect' : function(err, req, res) {
-        assert.isUndefined(res._redirect);
-      },
-    },
-  },
-  
-  'middleware with defaults': {
-    topic: function() {
-      return ensureLoggedOut();
-    },
-    
-    'when handling a request that is authenticated': {
-      topic: function(ensureLoggedOut) {
-        var self = this;
-        var req = new MockRequest();
-        req.isAuthenticated = function() { return true; };
-        var res = new MockResponse();
-        res.done = function() {
-          self.callback(null, req, res);
-        }
-        
-        function next(err) {
-          self.callback(new Error('should not be called'));
-        }
-        process.nextTick(function () {
-          ensureLoggedOut(req, res, next)
-        });
-      },
-      
-      'should not error' : function(err, req, res) {
-        assert.isNull(err);
-      },
-      'should redirect' : function(err, req, res) {
-        assert.equal(res._redirect, '/');
-      },
-    },
-  },
+  describe('middleware with a url', function() {
+    var mw = ensureLoggedOut('/home');
 
-}).export(module);
+    it('when authenticated: redirects', function() {
+      var req = new MockRequest();
+      req.isAuthenticated = function() { return true; };
+      var res = new MockResponse();
+      mw(req, res, function() { throw new Error('should not be called'); });
+      assert.strictEqual(res._redirect, '/home');
+    });
+
+    it('when not authenticated: calls next, does not redirect', function() {
+      var req = new MockRequest();
+      req.isAuthenticated = function() { return false; };
+      var res = new MockResponse();
+      var nextCalled = false;
+      mw(req, res, function(err) { assert.ifError(err); nextCalled = true; });
+      assert(nextCalled);
+      assert.strictEqual(res._redirect, undefined);
+    });
+
+    it('when it lacks an isAuthenticated function: calls next, does not redirect', function() {
+      var req = new MockRequest();
+      var res = new MockResponse();
+      var nextCalled = false;
+      mw(req, res, function(err) { assert.ifError(err); nextCalled = true; });
+      assert(nextCalled);
+      assert.strictEqual(res._redirect, undefined);
+    });
+  });
+
+  describe('middleware with a url and baseUrl', function() {
+    var mw = ensureLoggedOut({redirectTo:'/home', baseUrl:'/app'});
+
+    it('when authenticated: redirects relatively', function() {
+      var req = new MockRequest();
+      req.originalUrl = '/app/login';
+      req.isAuthenticated = function() { return true; };
+      var res = new MockResponse();
+      mw(req, res, function() { throw new Error('should not be called'); });
+      assert.strictEqual(res._redirect, 'home');
+    });
+
+    it('when authenticated on a sub-app: redirects relatively', function() {
+      var req = new MockRequest();
+      req.originalUrl = '/sub/foo';
+      req.isAuthenticated = function() { return true; };
+      var res = new MockResponse();
+      mw(req, res, function() { throw new Error('should not be called'); });
+      assert.strictEqual(res._redirect, '../app/home');
+    });
+
+    it('when authenticated and only req.url is set: redirects relatively', function() {
+      var req = new MockRequest();
+      req.url = '/app/login';
+      req.isAuthenticated = function() { return true; };
+      var res = new MockResponse();
+      mw(req, res, function() { throw new Error('should not be called'); });
+      assert.strictEqual(res._redirect, 'home');
+    });
+
+    it('when not authenticated: calls next, does not redirect', function() {
+      var req = new MockRequest();
+      req.originalUrl = '/app/login';
+      req.isAuthenticated = function() { return false; };
+      var res = new MockResponse();
+      var nextCalled = false;
+      mw(req, res, function(err) { assert.ifError(err); nextCalled = true; });
+      assert(nextCalled);
+      assert.strictEqual(res._redirect, undefined);
+    });
+  });
+
+  describe('middleware with defaults', function() {
+    var mw = ensureLoggedOut();
+
+    it('when authenticated: redirects to /', function() {
+      var req = new MockRequest();
+      req.isAuthenticated = function() { return true; };
+      var res = new MockResponse();
+      mw(req, res, function() { throw new Error('should not be called'); });
+      assert.strictEqual(res._redirect, '/');
+    });
+  });
+
+});

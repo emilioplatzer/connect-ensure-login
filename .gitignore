@@ -5,3 +5,17 @@
 node_modules
 npm-debug.log
 
+# Coverage directory used by tools like istanbul
+coverage
+*.lcov
+
+# nyc test coverage
+.nyc_output
+
+# Local files (qa-control)
+local-*
+*-local.*
+
+# qa-control generated artifact
+cucardas.log
+
