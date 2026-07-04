@@ -190,6 +190,50 @@ describe('ensureLoggedIn', function() {
     });
   });
 
+  describe('middleware with a non-local returnTo (open redirect)', function() {
+    var mw = ensureLoggedIn('/signin');
+
+    it('does not save a protocol-relative path (//host) as returnTo', function() {
+      var req = new MockRequest();
+      req.url = '//evil.com/x';
+      req.isAuthenticated = function() { return false; };
+      var res = new MockResponse();
+      mw(req, res, function() { throw new Error('should not be called'); });
+      assert.strictEqual(res._redirect, '/signin');
+      assert.strictEqual(req.session.returnTo, undefined);
+    });
+
+    it('does not save a backslash protocol-relative path (/\\host) as returnTo', function() {
+      var req = new MockRequest();
+      req.url = '/\\evil.com/x';
+      req.isAuthenticated = function() { return false; };
+      var res = new MockResponse();
+      mw(req, res, function() { throw new Error('should not be called'); });
+      assert.strictEqual(res._redirect, '/signin');
+      assert.strictEqual(req.session.returnTo, undefined);
+    });
+
+    it('does not save a path that does not start with a slash', function() {
+      var req = new MockRequest();
+      req.url = 'evil.com/x';
+      req.isAuthenticated = function() { return false; };
+      var res = new MockResponse();
+      mw(req, res, function() { throw new Error('should not be called'); });
+      assert.strictEqual(res._redirect, '/signin');
+      assert.strictEqual(req.session.returnTo, undefined);
+    });
+
+    it('still saves a normal local path as returnTo', function() {
+      var req = new MockRequest();
+      req.url = '/foo/bar';
+      req.isAuthenticated = function() { return false; };
+      var res = new MockResponse();
+      mw(req, res, function() { throw new Error('should not be called'); });
+      assert.strictEqual(res._redirect, '/signin');
+      assert.strictEqual(req.session.returnTo, '/foo/bar');
+    });
+  });
+
   describe('middleware when there is no session', function() {
     var mw = ensureLoggedIn('/signin');
 
