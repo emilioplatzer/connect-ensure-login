@@ -142,7 +142,7 @@ respuestas puede ser confusa. Este es el detalle de lo que ocurre:
     - El middleware guarda `session.returnTo` con `/settings`
     - El middleware redirige a `/login`
 2. El navegador sigue la redirección a `GET /login`
-    - La aplicación muestra el formulario de login (o ofrece SSO)
+    - La aplicación muestra el formulario de login (u ofrece SSO)
 3. El usuario envía sus credenciales con `POST /login`
     - La aplicación verifica las credenciales
     - Passport lee `session.returnTo` y redirige a `/settings`
