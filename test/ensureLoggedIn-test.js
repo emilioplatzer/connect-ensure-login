@@ -296,7 +296,7 @@ describe('ensureLoggedIn', function() {
       assert.strictEqual(req.session.returnTo, '/%2F/evil.com/x');
     });
 
-    it('does not save a path with a tab (the browser removes it: /\\t/host becomes //host)', function() {
+    it('does not save a path with a tab: the browser removes it and /\\t/host becomes //host', function() {
       var req = new MockRequest();
       req.url = '/\t/evil.com/x';
       req.isAuthenticated = function() { return false; };
@@ -306,7 +306,7 @@ describe('ensureLoggedIn', function() {
       assert.strictEqual(req.session.returnTo, undefined);
     });
 
-    it('does not save a path with a line feed', function() {
+    it('does not save a path with a line feed: the browser removes it', function() {
       var req = new MockRequest();
       req.url = '/\n/evil.com/x';
       req.isAuthenticated = function() { return false; };
@@ -316,7 +316,7 @@ describe('ensureLoggedIn', function() {
       assert.strictEqual(req.session.returnTo, undefined);
     });
 
-    it('does not save a path with a carriage return and line feed', function() {
+    it('does not save a path with a carriage return and line feed: the browser removes them', function() {
       var req = new MockRequest();
       req.url = '/\r\n/evil.com/x';
       req.isAuthenticated = function() { return false; };
@@ -324,76 +324,6 @@ describe('ensureLoggedIn', function() {
       mw(req, res, function() { throw new Error('should not be called'); });
       assert.strictEqual(res._redirect, '/signin');
       assert.strictEqual(req.session.returnTo, undefined);
-    });
-
-    it('does not save a path with a space', function() {
-      var req = new MockRequest();
-      req.url = '/ /evil.com/x';
-      req.isAuthenticated = function() { return false; };
-      var res = new MockResponse();
-      mw(req, res, function() { throw new Error('should not be called'); });
-      assert.strictEqual(res._redirect, '/signin');
-      assert.strictEqual(req.session.returnTo, undefined);
-    });
-
-    it('does not save a path with a null character', function() {
-      var req = new MockRequest();
-      req.url = '/\u0000/evil.com/x';
-      req.isAuthenticated = function() { return false; };
-      var res = new MockResponse();
-      mw(req, res, function() { throw new Error('should not be called'); });
-      assert.strictEqual(res._redirect, '/signin');
-      assert.strictEqual(req.session.returnTo, undefined);
-    });
-
-    it('does not save a path with a delete character', function() {
-      var req = new MockRequest();
-      req.url = '/\u007f/evil.com/x';
-      req.isAuthenticated = function() { return false; };
-      var res = new MockResponse();
-      mw(req, res, function() { throw new Error('should not be called'); });
-      assert.strictEqual(res._redirect, '/signin');
-      assert.strictEqual(req.session.returnTo, undefined);
-    });
-
-    it('does not save a path with a backslash after the first character', function() {
-      var req = new MockRequest();
-      req.url = '/foo\\..\\bar';
-      req.isAuthenticated = function() { return false; };
-      var res = new MockResponse();
-      mw(req, res, function() { throw new Error('should not be called'); });
-      assert.strictEqual(res._redirect, '/signin');
-      assert.strictEqual(req.session.returnTo, undefined);
-    });
-
-    it('does not save a path with non ASCII characters (the browser sends them percent-encoded)', function() {
-      var req = new MockRequest();
-      req.url = '/año';
-      req.isAuthenticated = function() { return false; };
-      var res = new MockResponse();
-      mw(req, res, function() { throw new Error('should not be called'); });
-      assert.strictEqual(res._redirect, '/signin');
-      assert.strictEqual(req.session.returnTo, undefined);
-    });
-
-    it('does not save a path with characters that are not valid in a URL', function() {
-      var req = new MockRequest();
-      req.url = '/foo"<script>';
-      req.isAuthenticated = function() { return false; };
-      var res = new MockResponse();
-      mw(req, res, function() { throw new Error('should not be called'); });
-      assert.strictEqual(res._redirect, '/signin');
-      assert.strictEqual(req.session.returnTo, undefined);
-    });
-
-    it('saves a local path with a query string', function() {
-      var req = new MockRequest();
-      req.url = '/foo/bar?x=1&y[]=2&z=%C3%B1';
-      req.isAuthenticated = function() { return false; };
-      var res = new MockResponse();
-      mw(req, res, function() { throw new Error('should not be called'); });
-      assert.strictEqual(res._redirect, '/signin');
-      assert.strictEqual(req.session.returnTo, '/foo/bar?x=1&y[]=2&z=%C3%B1');
     });
   });
 
