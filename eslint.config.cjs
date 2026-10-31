@@ -1,8 +1,17 @@
 "use strict";
 
+const sonarjs = require("eslint-plugin-sonarjs");
+
 module.exports = [
     {
         ignores: ["dist/**"]
+    },
+    {
+        // SonarQube rules (the ones silenced in the code)
+        plugins: { sonarjs },
+        rules: {
+            "sonarjs/no-clear-text-protocols": 2
+        }
     },
     {
         languageOptions: {

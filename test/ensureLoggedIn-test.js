@@ -258,7 +258,7 @@ describe('ensureLoggedIn', function() {
 
     it('does not save an absolute URL (http://host) as returnTo', function() {
       var req = new MockRequest();
-      req.url = 'http://evil.com/x';
+      req.url = 'http://evil.com/x'; // eslint-disable-line sonarjs/no-clear-text-protocols -- the absolute URL is the attack being tested
       req.isAuthenticated = function() { return false; };
       var res = new MockResponse();
       mw(req, res, function() { throw new Error('should not be called'); });
