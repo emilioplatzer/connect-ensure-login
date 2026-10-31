@@ -83,6 +83,15 @@ describe('ensureLoggedOut', function() {
       assert.strictEqual(res._redirect, 'home');
     });
 
+    it('when authenticated and the query has slashes: redirects relatively from the path, not from the query', function() {
+      var req = new MockRequest();
+      req.originalUrl = '/app/login?next=/a/b/c';
+      req.isAuthenticated = function() { return true; };
+      var res = new MockResponse();
+      mw(req, res, function() { throw new Error('should not be called'); });
+      assert.strictEqual(res._redirect, 'home');
+    });
+
     it('when not authenticated: calls next, does not redirect', function() {
       var req = new MockRequest();
       req.originalUrl = '/app/login';

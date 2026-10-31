@@ -6,7 +6,7 @@ Login session ensuring middleware for Connect/Express.
 [![npm-version](https://img.shields.io/npm/v/ensure-login.svg)](https://npmjs.org/package/ensure-login)
 [![downloads](https://img.shields.io/npm/dm/ensure-login.svg)](https://npmjs.org/package/ensure-login)
 [![build](https://github.com/emilioplatzer/connect-ensure-login/actions/workflows/build-and-test.yml/badge.svg)](https://github.com/emilioplatzer/connect-ensure-login/actions/workflows/build-and-test.yml)
-[![security](https://socket.dev/api/badge/npm/package/ensure-login)](https://socket.dev/npm/package/ensure-login)
+[![sonar](https://sonarcloud.io/api/project_badges/measure?project=emilioplatzer_connect-ensure-login&metric=alert_status)](https://sonarcloud.io/summary/overall?id=emilioplatzer_connect-ensure-login)
 [![qa-control](https://github.com/emilioplatzer/connect-ensure-login/actions/workflows/qa-control.yml/badge.svg)](https://github.com/emilioplatzer/connect-ensure-login/actions/workflows/qa-control.yml)
 
 
