@@ -1,119 +1,42 @@
 "use strict";
 
-var assert = require('assert');
 var ensureLoggedOut = require('../lib/ensureLoggedOut.js');
-
-
-function MockRequest() {
-}
-
-function MockResponse() {
-  this.headers = {};
-}
-
-MockResponse.prototype.setHeader = function(name, value) {
-  this.headers[name] = value;
-}
-
-MockResponse.prototype.redirect = function(location) {
-  this._redirect = location;
-}
+var getTestMiddleware = require('./support/middleware-cases.js').getTestMiddleware;
 
 
 describe('ensureLoggedOut', function() {
 
   describe('middleware with a url', function() {
-    var mw = ensureLoggedOut('/home');
+    var testEnsureLoggedOut = getTestMiddleware(ensureLoggedOut('/home'));
 
-    it('when authenticated: redirects', function() {
-      var req = new MockRequest();
-      req.isAuthenticated = function() { return true; };
-      var res = new MockResponse();
-      mw(req, res, function() { throw new Error('should not be called'); });
-      assert.strictEqual(res._redirect, '/home');
-    });
-
-    it('when not authenticated: calls next, does not redirect', function() {
-      var req = new MockRequest();
-      req.isAuthenticated = function() { return false; };
-      var res = new MockResponse();
-      var nextCalled = false;
-      mw(req, res, function(err) { assert.ifError(err); nextCalled = true; });
-      assert(nextCalled);
-      assert.strictEqual(res._redirect, undefined);
-    });
-
-    it('when it lacks an isAuthenticated function: calls next, does not redirect', function() {
-      var req = new MockRequest();
-      var res = new MockResponse();
-      var nextCalled = false;
-      mw(req, res, function(err) { assert.ifError(err); nextCalled = true; });
-      assert(nextCalled);
-      assert.strictEqual(res._redirect, undefined);
-    });
+    it('when authenticated: redirects', testEnsureLoggedOut({
+      request: {}, authenticated: true, redirect: '/home'}));
+    it('when not authenticated: calls next, does not redirect', testEnsureLoggedOut({
+      request: {}, authenticated: false}));
+    it('when it lacks an isAuthenticated function: calls next, does not redirect', testEnsureLoggedOut({
+      request: {}}));
   });
 
   describe('middleware with a url and baseUrl', function() {
-    var mw = ensureLoggedOut({redirectTo:'/home', baseUrl:'/app'});
+    var testEnsureLoggedOut = getTestMiddleware(ensureLoggedOut({redirectTo:'/home', baseUrl:'/app'}));
 
-    it('when authenticated: redirects relatively', function() {
-      var req = new MockRequest();
-      req.originalUrl = '/app/login';
-      req.isAuthenticated = function() { return true; };
-      var res = new MockResponse();
-      mw(req, res, function() { throw new Error('should not be called'); });
-      assert.strictEqual(res._redirect, 'home');
-    });
-
-    it('when authenticated on a sub-app: redirects relatively', function() {
-      var req = new MockRequest();
-      req.originalUrl = '/sub/foo';
-      req.isAuthenticated = function() { return true; };
-      var res = new MockResponse();
-      mw(req, res, function() { throw new Error('should not be called'); });
-      assert.strictEqual(res._redirect, '../app/home');
-    });
-
-    it('when authenticated and only req.url is set: redirects relatively', function() {
-      var req = new MockRequest();
-      req.url = '/app/login';
-      req.isAuthenticated = function() { return true; };
-      var res = new MockResponse();
-      mw(req, res, function() { throw new Error('should not be called'); });
-      assert.strictEqual(res._redirect, 'home');
-    });
-
-    it('when authenticated and the query has slashes: redirects relatively from the path, not from the query', function() {
-      var req = new MockRequest();
-      req.originalUrl = '/app/login?next=/a/b/c';
-      req.isAuthenticated = function() { return true; };
-      var res = new MockResponse();
-      mw(req, res, function() { throw new Error('should not be called'); });
-      assert.strictEqual(res._redirect, 'home');
-    });
-
-    it('when not authenticated: calls next, does not redirect', function() {
-      var req = new MockRequest();
-      req.originalUrl = '/app/login';
-      req.isAuthenticated = function() { return false; };
-      var res = new MockResponse();
-      var nextCalled = false;
-      mw(req, res, function(err) { assert.ifError(err); nextCalled = true; });
-      assert(nextCalled);
-      assert.strictEqual(res._redirect, undefined);
-    });
+    it('when authenticated: redirects relatively', testEnsureLoggedOut({
+      request: {originalUrl: '/app/login'}, authenticated: true, redirect: 'home'}));
+    it('when authenticated on a sub-app: redirects relatively', testEnsureLoggedOut({
+      request: {originalUrl: '/sub/foo'}, authenticated: true, redirect: '../app/home'}));
+    it('when authenticated and only req.url is set: redirects relatively', testEnsureLoggedOut({
+      request: {url: '/app/login'}, authenticated: true, redirect: 'home'}));
+    it('when authenticated and the query has slashes: redirects relatively from the path, not from the query', testEnsureLoggedOut({
+      request: {originalUrl: '/app/login?next=/a/b/c'}, authenticated: true, redirect: 'home'}));
+    it('when not authenticated: calls next, does not redirect', testEnsureLoggedOut({
+      request: {originalUrl: '/app/login'}, authenticated: false}));
   });
 
   describe('middleware with defaults', function() {
-    var mw = ensureLoggedOut();
+    var testEnsureLoggedOut = getTestMiddleware(ensureLoggedOut());
 
-    it('when authenticated: redirects to /', function() {
-      var req = new MockRequest();
-      req.isAuthenticated = function() { return true; };
-      var res = new MockResponse();
-      mw(req, res, function() { throw new Error('should not be called'); });
-      assert.strictEqual(res._redirect, '/');
-    });
+    it('when authenticated: redirects to /', testEnsureLoggedOut({
+      request: {}, authenticated: true, redirect: '/'}));
   });
 
 });
