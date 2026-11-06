@@ -18,6 +18,13 @@ describe('connect-ensure-login', function() {
       assert.strictEqual(login.ensureLoggedOut, login.ensureUnauthenticated);
       assert.strictEqual(login.ensureLoggedOut, login.ensureNotAuthenticated);
     });
+
+    it('should export isLocalPath', function() {
+      assert.strictEqual(typeof login.isLocalPath, 'function');
+      assert.strictEqual(login.isLocalPath('/foo/bar?x=1'), true);
+      assert.strictEqual(login.isLocalPath('//evil.com/x'), false);
+      assert.strictEqual(login.isLocalPath(undefined), false);
+    });
   });
 
 });
